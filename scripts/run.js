@@ -24,6 +24,15 @@ const main = async () => {
   waveCount = await waveContract.getTotalWaves();
 
   let waveTxn = await waveContract.wave();
+  // Above line awaits for a transaction connected to owner's wallet address and run wave func. signed by it.
+
+  await waveTxn.wait();
+
+  waveCount = await waveContract.getTotalWaves();
+
+  waveTxn = await waveContract.connect(randomPerson).wave();
+  // Above line awaits for a transaction connected to randomPerson's wallet address and run wave func. signed by it.
+
   await waveTxn.wait();
 
   waveCount = await waveContract.getTotalWaves();
