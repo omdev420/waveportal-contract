@@ -11,7 +11,18 @@ import "hardhat/console.sol";
 // 𝗰𝗼𝗻𝘁𝗿𝗮𝗰𝘁 𝘄𝗼𝗿𝗸𝘀 𝗹𝗶𝗸𝗲 𝗰𝗹𝗮𝘀𝘀𝗲𝘀, 𝗿𝗲𝗺𝗲𝗺𝗯𝗲𝗿 𝗝𝗮𝘃𝗮 😁. 𝗧𝗵𝗲𝘆 𝗵𝗮𝘃𝗲 𝗰𝗼𝗻𝘀𝘁𝗿𝘂𝗰𝘁𝗼𝗿𝘀 𝘄𝗵𝗶𝗰𝗵 𝗮𝗿𝗲 𝗰𝗮𝗹𝗹𝗲𝗱 𝘄𝗵𝗲𝗻 𝗮 𝗶𝗻𝘀𝘁𝗮𝗻𝗰𝗲 𝗶𝘀 𝗶𝗻𝗶𝘁𝗶𝗮𝗹𝗶𝘇𝗲𝗱 𝗳𝗶𝗿𝘀𝘁 𝘁𝗶𝗺𝗲.
 
 contract WavePortal {
+    uint256 totalWaves;
+
     constructor() {
-        console.log("Yo yo, I am a contract and I am smart");
+        console.log("WavePortal is ON!");
+    }
+
+    function wave() public {
+        totalWaves += 1;
+        console.log('%s has waved!',msg.sender);
+    }
+    function getTotalWaves() public view returns(uint256){
+        console.log("We have %d total waves!", totalWaves);
+        return totalWaves;
     }
 }
