@@ -1,28 +1,81 @@
 // SPDX-License-Identifier: UNLICENSED
 
-//👆 𝗔𝗯𝗼𝘃𝗲 𝗹𝗶𝗻𝗲 𝗿𝗲𝗽𝗿𝗲𝘀𝗲𝗻𝘁𝘀 𝘁𝗵𝗲 𝗹𝗶𝗰𝗲𝗻𝘀𝗲 𝘀𝗽𝗲𝗰𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝗶𝗻 𝗮 𝘀𝗶𝗻𝗴𝗹𝗲 𝗺𝗮𝗸𝗶𝗻𝗴 𝗶𝘁 𝗲𝗮𝘀𝗶𝗲𝗿 𝘁𝗼 𝗺𝗮𝗶𝗻𝘁𝗮𝗶𝗻 𝗹𝗶𝗰𝗲𝗻𝘀𝗲. 𝗛𝗲𝗿𝗲, 𝘄𝗲 𝗮𝗿𝗲𝗻'𝘁 𝘂𝘀𝗶𝗻𝗴 𝗮𝗻𝘆 𝗹𝗶𝗰𝗲𝗻𝘀𝗲, 𝗵𝗲𝗻𝗰𝗲 𝗨𝗡𝗟𝗜𝗖𝗘𝗡𝗦𝗘𝗗.⁡⁡
-
-pragma solidity ^0.8.4;
-// 𝗽𝗿𝗮𝗴𝗺𝗮 𝘁𝗲𝗹𝗹𝘀 𝘁𝗵𝗲 𝗰𝗼𝗺𝗽𝘂𝘁𝗲𝗿 𝗮𝗯𝗼𝘂𝘁 𝘁𝗵𝗲 𝗰𝗼𝗺𝗽𝗶𝗹𝗲𝗿 𝘁𝗼 𝘂𝘀𝗲 𝗳𝗼𝗿 𝗰𝗼𝗺𝗽𝗹𝗶𝗻𝗴 𝘁𝗵𝗶𝘀 𝘀𝗺𝗮𝗿𝘁 𝗰𝗼𝗻𝘁𝗿𝗮𝗰𝘁.⁡
+pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
-// 𝗔𝘀 𝘀𝗲𝗲𝗻 𝗶𝗻 𝗝𝗮𝘃𝗮𝗦𝗰𝗿𝗶𝗽𝘁, 𝘄𝗲 𝘂𝘀𝗲 𝗶𝗺𝗽𝗼𝗿𝘁 𝘁𝗼 𝗶𝗺𝗽𝗼𝗿𝘁 𝗺𝗼𝗱𝘂𝗹𝗲𝘀 𝗶𝗻 𝘁𝗵𝗲 𝗰𝗼𝗻𝘁𝗿𝗮𝗰𝘁.
-
-// 𝗰𝗼𝗻𝘁𝗿𝗮𝗰𝘁 𝘄𝗼𝗿𝗸𝘀 𝗹𝗶𝗸𝗲 𝗰𝗹𝗮𝘀𝘀𝗲𝘀, 𝗿𝗲𝗺𝗲𝗺𝗯𝗲𝗿 𝗝𝗮𝘃𝗮 😁. 𝗧𝗵𝗲𝘆 𝗵𝗮𝘃𝗲 𝗰𝗼𝗻𝘀𝘁𝗿𝘂𝗰𝘁𝗼𝗿𝘀 𝘄𝗵𝗶𝗰𝗵 𝗮𝗿𝗲 𝗰𝗮𝗹𝗹𝗲𝗱 𝘄𝗵𝗲𝗻 𝗮 𝗶𝗻𝘀𝘁𝗮𝗻𝗰𝗲 𝗶𝘀 𝗶𝗻𝗶𝘁𝗶𝗮𝗹𝗶𝘇𝗲𝗱 𝗳𝗶𝗿𝘀𝘁 𝘁𝗶𝗺𝗲.
 
 contract WavePortal {
     uint256 totalWaves;
+    uint256 private seed;
 
-    constructor() {
-        console.log("WavePortal is ON!");
+    event NewWave(address indexed from, uint256 timestamp, string message);
+
+    struct Wave {
+        address waver;
+        string message;
+        uint256 timestamp;
     }
 
-    function wave() public {
+    Wave[] waves;
+
+    /*
+     * This is an address => uint mapping, meaning I can associate an address with a number!
+     * In this case, I'll be storing the address with the last time the user waved at us.
+     */
+    mapping(address => uint256) public lastWavedAt;
+
+    constructor() payable {
+        console.log("We have been constructed!");
+        /*
+         * Set the initial seed
+         */
+        seed = (block.timestamp + block.difficulty) % 100;
+    }
+
+    function wave(string memory _message) public {
+        /*
+         * We need to make sure the current timestamp is at least 15-minutes bigger than the last timestamp we stored
+         */
+        require(
+            lastWavedAt[msg.sender] + 30 seconds < block.timestamp,
+            "Wait 15m"
+        );
+
+        /*
+         * Update the current timestamp we have for the user
+         */
+        lastWavedAt[msg.sender] = block.timestamp;
+
         totalWaves += 1;
-        console.log('%s has waved!',msg.sender);
+        console.log("%s has waved!", msg.sender);
+
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+
+        /*
+         * Generate a new seed for the next user that sends a wave
+         */
+        seed = (block.difficulty + block.timestamp + seed) % 100;
+
+        if (seed <= 50) {
+            console.log("%s won!", msg.sender);
+
+            uint256 prizeAmount = 0.0001 ether;
+            require(
+                prizeAmount <= address(this).balance,
+                "Trying to withdraw more money than they contract has."
+            );
+            (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+            require(success, "Failed to withdraw money from contract.");
+        }
+
+        emit NewWave(msg.sender, block.timestamp, _message);
     }
-    function getTotalWaves() public view returns(uint256){
-        console.log("We have %d total waves!", totalWaves);
+
+    function getAllWaves() public view returns (Wave[] memory) {
+        return waves;
+    }
+
+    function getTotalWaves() public view returns (uint256) {
         return totalWaves;
     }
 }

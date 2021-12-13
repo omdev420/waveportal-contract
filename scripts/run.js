@@ -1,41 +1,36 @@
 const main = async () => {
-  const [owner, randomPerson] = await hre.ethers.getSigners();
-  // tells hardhat to grab contarct owner wallet adress and some random wallet address called randomPerson
-
   const waveContractFactory = await hre.ethers.getContractFactory("WavePortal");
-
-  // Above line compiles the contract WavePortal generate the necessary files we need to work with our contract under the artifacts directory
-
-  const waveContract = await waveContractFactory.deploy();
-
-  // What's happening here is Hardhat will create a local Ethereum network for us, but just for this contract. Then, after the script completes it'll destroy that local network. So, every time you run the contract, it'll be a fresh blockchain. What's the point? It's kinda like refreshing your local server every time so you always start from a clean slate which makes it easy to debug errors.
-
+  const waveContract = await waveContractFactory.deploy({
+    value: hre.ethers.utils.parseEther("0.1"),
+  });
   await waveContract.deployed();
+  console.log("Contract addy:", waveContract.address);
 
-  // We'll wait until our contract is deployed to our local bchain. Remember the constructor we made in the WavePortal contract, it will run when deployed
+  let contractBalance = await hre.ethers.provider.getBalance(
+    waveContract.address
+  );
+  console.log(
+    "Contract balance:",
+    hre.ethers.utils.formatEther(contractBalance)
+  );
 
-  console.log("Contract deployed to:", waveContract.address);
-  // Prints out the address where smart contract is located.
-
-  console.log("Contract deployed by:", owner.address);
-  // Prints out owner address, owner is the person who deploys the contract.
-
-  let waveCount;
-  waveCount = await waveContract.getTotalWaves();
-
-  let waveTxn = await waveContract.wave();
-  // Above line awaits for a transaction connected to owner's wallet address and run wave func. signed by it.
-
+  /*
+   * Let's try two waves now
+   */
+  const waveTxn = await waveContract.wave("This is wave #1");
   await waveTxn.wait();
 
-  waveCount = await waveContract.getTotalWaves();
+  const waveTxn2 = await waveContract.wave("This is wave #2");
+  await waveTxn2.wait();
 
-  waveTxn = await waveContract.connect(randomPerson).wave();
-  // Above line awaits for a transaction connected to randomPerson's wallet address and run wave func. signed by it.
+  contractBalance = await hre.ethers.provider.getBalance(waveContract.address);
+  console.log(
+    "Contract balance:",
+    hre.ethers.utils.formatEther(contractBalance)
+  );
 
-  await waveTxn.wait();
-
-  waveCount = await waveContract.getTotalWaves();
+  let allWaves = await waveContract.getAllWaves();
+  console.log(allWaves);
 };
 
 const runMain = async () => {
